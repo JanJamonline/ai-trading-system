@@ -1,13 +1,28 @@
-import pandas as pd
+from price_module.price_manager import PriceManager
+from ta_module.ta_manager import TAManager
+from decision_engine.decision_engine import DecisionEngine
 from backtest_engine.backtest_engine import BacktestEngine
 
-
-def generate_signals_multi(symbols: list[str]) -> pd.DataFrame:
+def generate_signals_multi(symbols):
     all_results = []
 
     for symbol in symbols:
-        engine = BacktestEngine(symbol)
-        df = engine.run()
-        all_results.append(df)
+        price_manager = PriceManager(
+            csv_path="data/sample_prices.csv",
+            symbol=symbol
+        )
 
-    return pd.concat(all_results, ignore_index=True)
+        ta_manager = TAManager()
+        decision_engine = DecisionEngine()
+
+        engine = BacktestEngine(
+            price_manager=price_manager,
+            ta_manager=ta_manager,
+            decision_engine=decision_engine,
+            symbol=symbol
+        )
+
+        results = engine.run()
+        all_results.extend(results)
+
+    return all_results

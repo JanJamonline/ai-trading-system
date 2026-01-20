@@ -1,24 +1,27 @@
 import pandas as pd
 
-
 class PriceManager:
-    def __init__(self, csv_path: str, symbol: str):
-        self.csv_path = csv_path
+    def __init__(self, csv_path, symbol):
         self.symbol = symbol
-        self.df = self._load_prices()
 
-    def _load_prices(self):
-        df = pd.read_csv(self.csv_path)
+        df = pd.read_csv(csv_path)
 
-        required = {"time", "symbol", "price"}
-        if not required.issubset(df.columns):
-            raise ValueError("CSV must contain time, symbol, price columns")
+        # Normalize column names
+        df.columns = [c.lower().strip() for c in df.columns]
 
-        df = df[df["symbol"] == self.symbol].copy()
-        df["time"] = pd.to_datetime(df["time"])
-        df.reset_index(drop=True, inplace=True)
+        # Enforce required schema
+        if "price" in df.columns and "close" not in df.columns:
+            df["close"] = df["price"]
 
-        return df
+        required = {"time", "symbol", "close"}
+        missing = required - set(df.columns)
 
-    def get_prices(self) -> pd.DataFrame:
+        if missing:
+            raise ValueError(f"Missing required columns: {missing}")
+
+        df["time"] = df["time"].astype(str)
+
+        self.df = df[df["symbol"] == symbol].reset_index(drop=True)
+
+    def get_prices(self):
         return self.df

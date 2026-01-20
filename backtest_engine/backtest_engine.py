@@ -1,20 +1,30 @@
-import pandas as pd
-from price_module.price_manager import PriceManager
-from ta_module.ta_manager import TAManager
-from decision_engine.decision_engine import DecisionEngine
-
-
 class BacktestEngine:
-    def __init__(self, symbol: str):
+    def __init__(self, price_manager, ta_manager, decision_engine, symbol):
+        self.price = price_manager
+        self.ta = ta_manager
+        self.decision = decision_engine
         self.symbol = symbol
-        self.ta = TAManager()
-        self.decision = DecisionEngine()
+        print("BacktestEngine initialized")
 
-    def run(self) -> pd.DataFrame:
-        pm = PriceManager("data/sample_prices.csv", self.symbol)
-        prices = pm.get_prices()
+    def run(self):
+        prices_df = self.price.get_prices()
+        prices_df = self.ta.compute(prices_df)
 
-        ta_df = self.ta.compute(prices)
-        final_df = self.decision.evaluate(ta_df)
+        results = []
 
-        return final_df
+        for i in range(len(prices_df)):
+            signal, direction, confidence, reason = self.decision.evaluate(
+                prices_df.iloc[i]
+            )
+
+            results.append({
+                "time": prices_df.iloc[i]["time"],
+                "symbol": self.symbol,
+                "price": prices_df.iloc[i]["close"],
+                "signal": signal,
+                "direction": direction,
+                "confidence": confidence,
+                "reason": reason
+            })
+
+        return results

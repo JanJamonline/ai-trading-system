@@ -1,17 +1,13 @@
-import pandas as pd
-
-
 class DecisionEngine:
-    def evaluate(self, df: pd.DataFrame) -> pd.DataFrame:
-        out = df.copy()
+    def __init__(self):
+        print("DecisionEngine initialized")
 
-        out["signal"] = out["ta_signal"]
-        out["direction"] = out["signal"].map(
-            {"BUY": "BULLISH", "SELL": "BEARISH", "HOLD": "NEUTRAL"}
-        )
-        out["confidence"] = out["signal"].apply(
-            lambda x: 70 if x in ["BUY", "SELL"] else 0
-        )
-        out["reason"] = out["signal"]
+    def evaluate(self, row):
+        trend = row["trend"]
 
-        return out
+        if trend == "UP":
+            return ("BUY", "BULLISH", 70, "UP")
+        elif trend == "DOWN":
+            return ("SELL", "BEARISH", 70, "DOWN")
+        else:
+            return ("HOLD", "NEUTRAL", 0, "FLAT")

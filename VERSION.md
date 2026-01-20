@@ -1,5 +1,4 @@
-# AI Trading System
-
-Version: V1.0.0  
-Status: Clean stable baseline  
-Architecture: Modular, multi-symbol ready
+V1.1.0 – Clean unified baseline
+- Single symbol
+- Price → TA → Decision → Backtest pipeline
+- No partial interfaces
