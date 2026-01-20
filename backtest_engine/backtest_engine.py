@@ -4,27 +4,48 @@ class BacktestEngine:
         self.ta = ta_manager
         self.decision = decision_engine
         self.symbol = symbol
+
         print("BacktestEngine initialized")
 
     def run(self):
         prices_df = self.price.get_prices()
-        prices_df = self.ta.compute(prices_df)
-
         results = []
 
-        for i in range(len(prices_df)):
-            signal, direction, confidence, reason = self.decision.evaluate(
-                prices_df.iloc[i]
+        last_ta_signal = None
+        confirmation_count = 0
+
+        for i in range(1, len(prices_df)):
+            ta_signal = self.ta.compute(
+                prices_df.iloc[i],
+                prices_df.iloc[i - 1]
             )
+
+            # 3️⃣ Trend Confirmation (2 candles)
+            if ta_signal["signal"] == last_ta_signal:
+                confirmation_count += 1
+            else:
+                confirmation_count = 1
+
+            last_ta_signal = ta_signal["signal"]
+
+            if confirmation_count < 2:
+                decision = {
+                    "signal": "HOLD",
+                    "direction": "NEUTRAL",
+                    "confidence": 0,
+                    "reason": "NO_CONFIRMATION"
+                }
+            else:
+                decision = self.decision.evaluate(i, ta_signal)
 
             results.append({
                 "time": prices_df.iloc[i]["time"],
                 "symbol": self.symbol,
                 "price": prices_df.iloc[i]["close"],
-                "signal": signal,
-                "direction": direction,
-                "confidence": confidence,
-                "reason": reason
+                "signal": decision["signal"],
+                "direction": decision["direction"],
+                "confidence": decision["confidence"],
+                "reason": decision["reason"]
             })
 
         return results

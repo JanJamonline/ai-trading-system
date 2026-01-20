@@ -3,6 +3,7 @@ from ta_module.ta_manager import TAManager
 from decision_engine.decision_engine import DecisionEngine
 from backtest_engine.backtest_engine import BacktestEngine
 
+
 def generate_signals_multi(symbols):
     all_results = []
 

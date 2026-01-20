@@ -1,12 +1,30 @@
 class TAManager:
-    def compute(self, prices_df):
-        df = prices_df.copy()
-        df["trend"] = "FLAT"
+    def __init__(self):
+        self.last_signal = None
 
-        for i in range(1, len(df)):
-            if df.loc[i, "close"] > df.loc[i - 1, "close"]:
-                df.loc[i, "trend"] = "UP"
-            elif df.loc[i, "close"] < df.loc[i - 1, "close"]:
-                df.loc[i, "trend"] = "DOWN"
+    def compute(self, current_row, previous_row):
+        """
+        Basic momentum-based TA.
+        """
+        if current_row["close"] > previous_row["close"]:
+            return {
+                "signal": "BUY",
+                "direction": "BULLISH",
+                "confidence": 70,
+                "reason": "UP"
+            }
 
-        return df
+        if current_row["close"] < previous_row["close"]:
+            return {
+                "signal": "SELL",
+                "direction": "BEARISH",
+                "confidence": 70,
+                "reason": "DOWN"
+            }
+
+        return {
+            "signal": "HOLD",
+            "direction": "NEUTRAL",
+            "confidence": 0,
+            "reason": "FLAT"
+        }
