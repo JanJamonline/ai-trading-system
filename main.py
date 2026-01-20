@@ -1,10 +1,13 @@
-from multi_symbol_engine import generate_signals
+from multi_symbol_engine import generate_signals_multi
+
 
 def main():
-    results = generate_signals()
+    print("AI Trading System V1 starting...")
+    symbols = ["TATASTEEL"]
 
-    for r in results:
-        print(r)
+    df = generate_signals_multi(symbols)
+    print(df.tail())
+
 
 if __name__ == "__main__":
     main()

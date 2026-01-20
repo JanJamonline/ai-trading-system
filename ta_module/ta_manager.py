@@ -1,11 +1,12 @@
-class TAManager:
-    def compute(self, prices, index):
-        if index == 0:
-            return "WARMUP"
+import pandas as pd
 
-        if prices[index] > prices[index - 1]:
-            return "UP"
-        elif prices[index] < prices[index - 1]:
-            return "DOWN"
-        else:
-            return "FLAT"
+
+class TAManager:
+    def compute(self, prices_df: pd.DataFrame) -> pd.DataFrame:
+        df = prices_df.copy()
+
+        df["ta_signal"] = "HOLD"
+        df.loc[df["price"].diff() > 0, "ta_signal"] = "BUY"
+        df.loc[df["price"].diff() < 0, "ta_signal"] = "SELL"
+
+        return df
