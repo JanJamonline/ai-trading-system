@@ -23,7 +23,6 @@ def generate_signals_multi(symbols):
             symbol=symbol
         )
 
-        results = engine.run()
-        all_results.extend(results)
+        all_results.extend(engine.run())
 
     return all_results

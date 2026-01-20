@@ -11,8 +11,8 @@ class BacktestEngine:
         prices_df = self.price.get_prices()
         results = []
 
-        last_ta_signal = None
-        confirmation_count = 0
+        last_signal = None
+        confirmation = 0
 
         for i in range(1, len(prices_df)):
             ta_signal = self.ta.compute(
@@ -20,23 +20,25 @@ class BacktestEngine:
                 prices_df.iloc[i - 1]
             )
 
-            # 3️⃣ Trend Confirmation (2 candles)
-            if ta_signal["signal"] == last_ta_signal:
-                confirmation_count += 1
+            if ta_signal["signal"] == last_signal:
+                confirmation += 1
             else:
-                confirmation_count = 1
+                confirmation = 1
 
-            last_ta_signal = ta_signal["signal"]
+            last_signal = ta_signal["signal"]
 
-            if confirmation_count < 2:
+            if confirmation < 2:
                 decision = {
                     "signal": "HOLD",
                     "direction": "NEUTRAL",
                     "confidence": 0,
+                    "signal_strength": "WEAK",
+                    "risk_label": "HIGH_RISK",
+                    "exposure_hint": "IGNORE",
                     "reason": "NO_CONFIRMATION"
                 }
             else:
-                decision = self.decision.evaluate(i, ta_signal)
+                decision = self.decision.evaluate(ta_signal)
 
             results.append({
                 "time": prices_df.iloc[i]["time"],
@@ -45,6 +47,9 @@ class BacktestEngine:
                 "signal": decision["signal"],
                 "direction": decision["direction"],
                 "confidence": decision["confidence"],
+                "signal_strength": decision["signal_strength"],
+                "risk_label": decision["risk_label"],
+                "exposure_hint": decision["exposure_hint"],
                 "reason": decision["reason"]
             })
 
