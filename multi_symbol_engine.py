@@ -2,37 +2,23 @@ import pandas as pd
 from ta_module.ta_manager import TAManager
 from fa_module.fa_manager import FAManager
 from signal_fusion.fusion_engine import FusionEngine
+from backtest_engine.backtest_engine import BacktestEngine
 
 def generate_signals_multi(symbols):
-    results = []
+    all_results = []
 
     for symbol in symbols:
-        price_df = pd.read_csv(f"data/{symbol}_5m.csv")
+        price_path = f"data/{symbol}_5m.csv"
+        fa_path = "data/fa_data.csv"
 
-        ta = TAManager()
-        fa = FAManager("data/fa_data.csv")
+        price_df = pd.read_csv(price_path)
+        fa_df = pd.read_csv(fa_path)
+
+        ta = TAManager(price_df)          # ✅ FIXED
+        fa = FAManager(fa_df)
         fusion = FusionEngine()
 
-        for i in range(1, len(price_df)):
-            ta_signal, ta_strength = ta.evaluate(price_df, i)
-            fa_signal, fa_strength = fa.evaluate(symbol)
+        engine = BacktestEngine(ta, fa, fusion)
+        all_results.extend(engine.run(price_df, symbol))
 
-            fused = fusion.combine(
-                ta_signal, ta_strength,
-                fa_signal, fa_strength
-            )
-
-            results.append({
-                "time": price_df.iloc[i]["time"],
-                "symbol": symbol,
-                "price": price_df.iloc[i]["close"],
-                "ta_signal": ta_signal,
-                "ta_strength": ta_strength,
-                "fa_signal": fa_signal,
-                "fa_strength": fa_strength,
-                "signal": fused["signal"],
-                "quality": fused["quality"],
-                "action": fused["action"]
-            })
-
-    return pd.DataFrame(results)
+    return all_results

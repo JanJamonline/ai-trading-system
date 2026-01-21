@@ -6,12 +6,12 @@ class TAManager:
         if i == 0:
             return "HOLD", 0, "NO_CONFIRMATION"
 
-        prev = self.df.loc[i - 1, "close"]
-        curr = self.df.loc[i, "close"]
+        prev_close = self.df.loc[i - 1, "close"]
+        curr_close = self.df.loc[i, "close"]
 
-        if curr > prev:
-            return "BUY", 70, "UP"
-        elif curr < prev:
-            return "SELL", 70, "DOWN"
+        if curr_close > prev_close:
+            return "BUY", 70, "PRICE_UP"
+        elif curr_close < prev_close:
+            return "SELL", 70, "PRICE_DOWN"
         else:
             return "HOLD", 0, "FLAT"

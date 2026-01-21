@@ -1,31 +1,31 @@
 class FusionEngine:
-    def combine(self, ta_signal, ta_strength, fa_signal, fa_strength):
-        # Base combined signal
-        if ta_signal == "BUY" and fa_signal == "BULLISH":
-            signal = "BUY"
-            quality = "STRONG"
-        elif ta_signal == "SELL" and fa_signal == "BEARISH":
-            signal = "SELL"
-            quality = "STRONG"
-        elif ta_signal in ["BUY", "SELL"]:
-            signal = "HOLD"
-            quality = "WEAK"
-        else:
-            signal = "HOLD"
-            quality = "WEAK"
+    def fuse(self, ta_signal, ta_strength, fa_signal, fa_strength):
+        """
+        Combines TA + FA into a final signal and quality.
+        """
 
-        # Action column (final trader-facing instruction)
-        if signal == "BUY" and quality == "STRONG":
-            action = "BUY"
-        elif signal == "SELL" and quality == "STRONG":
-            action = "SELL"
-        elif signal in ["BUY", "SELL"] and quality == "MEDIUM":
-            action = signal
-        else:
-            action = "WAIT"
+        score = 0
 
-        return {
-            "signal": signal,
-            "quality": quality,
-            "action": action
-        }
+        # TA contribution
+        if ta_signal == "BUY":
+            score += ta_strength
+        elif ta_signal == "SELL":
+            score -= ta_strength
+
+        # FA contribution
+        if fa_signal == "BULLISH":
+            score += fa_strength
+        elif fa_signal == "BEARISH":
+            score -= fa_strength
+
+        # Final decision
+        if score >= 80:
+            return "BUY", "STRONG"
+        elif score <= -80:
+            return "SELL", "STRONG"
+        elif score >= 40:
+            return "BUY", "MEDIUM"
+        elif score <= -40:
+            return "SELL", "MEDIUM"
+        else:
+            return "HOLD", "WEAK"
