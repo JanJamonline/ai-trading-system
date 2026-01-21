@@ -7,15 +7,13 @@ class BacktestEngine:
     def run(self, df, symbol):
         results = []
 
-        for i in range(len(df)):
+        for i in range(1, len(df)):
             ta_signal, ta_strength, ta_reason = self.ta.evaluate(i)
             fa_signal, fa_strength = self.fa.evaluate(symbol)
 
-            final_signal, quality = self.fusion.fuse(
-                ta_signal,
-                ta_strength,
-                fa_signal,
-                fa_strength
+            final_signal, quality = self.fusion.combine(
+                ta_signal, ta_strength,
+                fa_signal, fa_strength
             )
 
             results.append({
@@ -24,11 +22,11 @@ class BacktestEngine:
                 "price": df.loc[i, "close"],
                 "ta_signal": ta_signal,
                 "ta_strength": ta_strength,
-                "ta_reason": ta_reason,
                 "fa_signal": fa_signal,
                 "fa_strength": fa_strength,
                 "signal": final_signal,
-                "quality": quality
+                "quality": quality,
+                "reason": ta_reason
             })
 
         return results
