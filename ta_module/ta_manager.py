@@ -1,17 +1,11 @@
 class TAManager:
-    def compute(self, df):
-        signals = []
+    def evaluate(self, df, i):
+        if i == 0:
+            return "HOLD", "WEAK", "NO_CONFIRMATION"
 
-        for i in range(len(df)):
-            if i == 0:
-                signals.append("FLAT")
-            else:
-                if df.loc[i, "close"] > df.loc[i - 1, "close"]:
-                    signals.append("UP")
-                elif df.loc[i, "close"] < df.loc[i - 1, "close"]:
-                    signals.append("DOWN")
-                else:
-                    signals.append("FLAT")
+        if df.loc[i, "close"] > df.loc[i - 1, "close"]:
+            return "BUY", "STRONG", "UP"
+        elif df.loc[i, "close"] < df.loc[i - 1, "close"]:
+            return "SELL", "STRONG", "DOWN"
 
-        df["ta_signal"] = signals
-        return df
+        return "HOLD", "WEAK", "FLAT"
