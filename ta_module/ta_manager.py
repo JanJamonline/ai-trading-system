@@ -1,30 +1,17 @@
 class TAManager:
-    def __init__(self):
-        self.last_signal = None
+    def compute(self, df):
+        signals = []
 
-    def compute(self, current_row, previous_row):
-        """
-        Basic momentum-based TA.
-        """
-        if current_row["close"] > previous_row["close"]:
-            return {
-                "signal": "BUY",
-                "direction": "BULLISH",
-                "confidence": 70,
-                "reason": "UP"
-            }
+        for i in range(len(df)):
+            if i == 0:
+                signals.append("FLAT")
+            else:
+                if df.loc[i, "close"] > df.loc[i - 1, "close"]:
+                    signals.append("UP")
+                elif df.loc[i, "close"] < df.loc[i - 1, "close"]:
+                    signals.append("DOWN")
+                else:
+                    signals.append("FLAT")
 
-        if current_row["close"] < previous_row["close"]:
-            return {
-                "signal": "SELL",
-                "direction": "BEARISH",
-                "confidence": 70,
-                "reason": "DOWN"
-            }
-
-        return {
-            "signal": "HOLD",
-            "direction": "NEUTRAL",
-            "confidence": 0,
-            "reason": "FLAT"
-        }
+        df["ta_signal"] = signals
+        return df
