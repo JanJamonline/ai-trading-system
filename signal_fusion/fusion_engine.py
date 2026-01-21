@@ -1,7 +1,7 @@
 class FusionEngine:
     def fuse(self, ta_signal, ta_strength, fa_signal, fa_strength):
         """
-        Combines TA + FA into a final signal and quality.
+        Option A.3 — Confidence & Threshold Tuned Fusion
         """
 
         score = 0
@@ -18,14 +18,14 @@ class FusionEngine:
         elif fa_signal == "BEARISH":
             score -= fa_strength
 
-        # Final decision
-        if score >= 80:
+        # Tuned thresholds
+        if score >= 100:
             return "BUY", "STRONG"
-        elif score <= -80:
+        elif score <= -100:
             return "SELL", "STRONG"
-        elif score >= 40:
+        elif score >= 60:
             return "BUY", "MEDIUM"
-        elif score <= -40:
+        elif score <= -60:
             return "SELL", "MEDIUM"
         else:
             return "HOLD", "WEAK"
