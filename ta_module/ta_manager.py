@@ -1,25 +1,18 @@
 class TAManager:
-    """
-    Technical Analysis manager for a single timeframe.
-    """
-
     def __init__(self, df):
-        self.df = df.reset_index(drop=True)
+        self.df = df
 
-    def evaluate(self, index: int):
-        """
-        Simple momentum-based TA.
-        """
+    def evaluate(self, idx):
+        if idx <= 0 or idx >= len(self.df):
+            return "HOLD", 0, "HIGH_RISK", "NO_DATA"
 
-        if index == 0:
-            return "HOLD", 0, "NO_DATA"
+        close = self.df.iloc[idx]["close"]
+        prev_close = self.df.iloc[idx - 1]["close"]
 
-        prev_close = self.df.loc[index - 1, "close"]
-        curr_close = self.df.loc[index, "close"]
+        if close > prev_close:
+            return "BUY", 70, "MEDIUM_RISK", "UP"
 
-        if curr_close > prev_close:
-            return "BUY", 70, "UP"
-        elif curr_close < prev_close:
-            return "SELL", 70, "DOWN"
+        if close < prev_close:
+            return "SELL", 70, "MEDIUM_RISK", "DOWN"
 
-        return "HOLD", 0, "FLAT"
+        return "HOLD", 0, "HIGH_RISK", "NO_CONFIRMATION"

@@ -1,22 +1,11 @@
+# timeframe_engine/timeframe_validator.py
+
 class TimeframeValidator:
-    """
-    Validates signal confirmation across multiple timeframes.
-    This version is LOGIC-ONLY and does not alter execution yet.
-    """
+    def validate(self, signal_5m, signal_15m):
+        if signal_15m is None:
+            return "UNKNOWN"
 
-    def __init__(self):
-        pass
+        if signal_5m == signal_15m:
+            return "CONFIRMED"
 
-    def validate(self, lower_tf_signal: str, higher_tf_signal: str) -> bool:
-        """
-        Returns True if signals are aligned, else False.
-
-        BUY + BUY   → True
-        SELL + SELL → True
-        Anything else → False
-        """
-
-        if lower_tf_signal == higher_tf_signal:
-            return True
-
-        return False
+        return "CONFLICT"

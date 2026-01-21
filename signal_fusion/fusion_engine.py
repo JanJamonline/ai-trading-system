@@ -1,18 +1,11 @@
-# signal_fusion/fusion_engine.py
-
 class FusionEngine:
-    def fuse(self, ta_signal, ta_strength, fa_signal, fa_strength):
-        # Conflict → HOLD
-        if ta_signal in ["BUY", "SELL"] and fa_signal not in ["BULLISH", "BEARISH"]:
+    def fuse(self, ta_signal, ta_strength, fa_signal, fa_strength, tf_agree):
+        if not tf_agree:
             return "HOLD", "WEAK"
 
-        if ta_signal == "BUY" and fa_signal == "BULLISH":
-            return "BUY", "STRONG"
-
-        if ta_signal == "SELL" and fa_signal == "BEARISH":
-            return "SELL", "STRONG"
-
-        if ta_signal in ["BUY", "SELL"]:
+        if ta_signal == fa_signal:
+            if ta_strength >= 70 and fa_strength >= 70:
+                return ta_signal, "STRONG"
             return ta_signal, "MEDIUM"
 
         return "HOLD", "WEAK"
@@ -21,13 +14,10 @@ class FusionEngine:
         if risk_label == "HIGH_RISK":
             return "AVOID"
 
-        if quality == "STRONG" and signal in ["BUY", "SELL"]:
-            return signal
+        if signal == "BUY" and quality == "STRONG":
+            return "BUY"
 
-        if quality == "MEDIUM" and signal in ["BUY", "SELL"]:
-            return signal
-
-        if quality == "WEAK":
-            return "WAIT"
+        if signal == "SELL" and quality == "STRONG":
+            return "SELL"
 
         return "WAIT"
