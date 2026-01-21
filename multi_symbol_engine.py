@@ -10,8 +10,7 @@ def generate_signals_multi(symbols):
     all_results = []
 
     for symbol in symbols:
-        price_path = f"data/{symbol}_5m.csv"
-        price_df = pd.read_csv(price_path)
+        price_df = pd.read_csv(f"data/{symbol}_5m.csv")
 
         ta = TAManager(price_df)
         fa = FAManager("data/fa_data.csv")

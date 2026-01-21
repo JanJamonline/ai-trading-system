@@ -8,7 +8,7 @@ class BacktestEngine:
         results = []
 
         for i in range(1, len(df)):
-            ta_signal, ta_strength, ta_reason = self.ta.evaluate(i)
+            ta_signal, ta_strength, reason = self.ta.evaluate(i)
             fa_signal, fa_strength = self.fa.evaluate(symbol)
 
             final_signal, quality = self.fusion.combine(
@@ -26,7 +26,7 @@ class BacktestEngine:
                 "fa_strength": fa_strength,
                 "signal": final_signal,
                 "quality": quality,
-                "reason": ta_reason
+                "reason": reason
             })
 
         return results
