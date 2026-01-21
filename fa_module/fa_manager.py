@@ -1,10 +1,9 @@
 import pandas as pd
-from fa_module.fa_rules import evaluate_fa
-
+from .fa_rules import evaluate_fa
 
 class FAManager:
-    def __init__(self, fa_csv_path: str):
-        self.df = pd.read_csv(fa_csv_path)
+    def __init__(self, path="data/fa_data.csv"):
+        self.df = pd.read_csv(path)
 
     def evaluate(self, symbol):
         row = self.df[self.df["symbol"] == symbol]

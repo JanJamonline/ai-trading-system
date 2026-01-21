@@ -1,14 +1,19 @@
 def evaluate_fa(row):
     """
-    Expected columns in fa_data.csv:
-    symbol, score
+    Normalize FA score into signal + strength (0–100)
     """
-
-    score = row.get("score", 0)
-
-    if score >= 70:
-        return "BULLISH", 70
-    elif score <= 30:
-        return "BEARISH", 70
-    else:
+    if row is None or "score" not in row:
         return "NEUTRAL", 0
+
+    score = row["score"]
+
+    if score >= 75:
+        return "BULLISH", 80
+    elif score >= 60:
+        return "BULLISH", 60
+    elif score >= 45:
+        return "NEUTRAL", 40
+    elif score >= 30:
+        return "BEARISH", 60
+    else:
+        return "BEARISH", 80
