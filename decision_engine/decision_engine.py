@@ -6,23 +6,33 @@ class DecisionEngine:
         ta = row["ta_signal"]
 
         if ta == "UP":
-            return {
-                "signal": "BUY",
-                "direction": "BULLISH",
-                "confidence": 70,
-                "reason": "UP"
-            }
+            confidence = 70
+            signal = "BUY"
+            direction = "BULLISH"
+            reason = "UP"
         elif ta == "DOWN":
-            return {
-                "signal": "SELL",
-                "direction": "BEARISH",
-                "confidence": 70,
-                "reason": "DOWN"
-            }
+            confidence = 70
+            signal = "SELL"
+            direction = "BEARISH"
+            reason = "DOWN"
         else:
-            return {
-                "signal": "HOLD",
-                "direction": "NEUTRAL",
-                "confidence": 0,
-                "reason": "NO_CONFIRMATION"
-            }
+            confidence = 0
+            signal = "HOLD"
+            direction = "NEUTRAL"
+            reason = "NO_CONFIRMATION"
+
+        # 🔹 FINAL SIGNAL QUALITY (OPTION A)
+        if confidence >= 70:
+            quality = "STRONG"
+        elif confidence >= 40:
+            quality = "MEDIUM"
+        else:
+            quality = "WEAK"
+
+        return {
+            "signal": signal,
+            "direction": direction,
+            "confidence": confidence,
+            "quality": quality,
+            "reason": reason
+        }
