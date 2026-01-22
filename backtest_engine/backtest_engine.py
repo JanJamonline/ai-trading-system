@@ -1,11 +1,16 @@
-from backtest_engine.signal_evaluator import SignalEvaluator
+# backtest_engine/backtest_engine.py
+
+from signal_fusion.fusion_engine import FusionEngine
 
 class BacktestEngine:
-    def __init__(self, ta_5m, fa, fusion):
+    """
+    Executes signal evaluation per candle
+    """
+
+    def __init__(self, ta_5m, fa):
         self.ta_5m = ta_5m
         self.fa = fa
-        self.fusion = fusion
-        self.evaluator = SignalEvaluator()
+        self.fusion = FusionEngine()
 
     def run(self, df, symbol):
         results = []
@@ -14,16 +19,11 @@ class BacktestEngine:
             ta_signal, ta_strength, reason = self.ta_5m.evaluate(i)
             fa_signal, fa_strength = self.fa.evaluate(symbol)
 
-            signal, quality, risk_label = self.fusion.fuse(
-                ta_signal, fa_signal
-            )
-
-            confidence_score = self.evaluator.calculate_confidence_score(
-                ta_strength=ta_strength,
-                fa_strength=fa_strength,
+            fused = self.fusion.fuse(
                 ta_signal=ta_signal,
+                ta_strength=ta_strength,
                 fa_signal=fa_signal,
-                risk_label=risk_label
+                fa_strength=fa_strength
             )
 
             results.append({
@@ -34,11 +34,12 @@ class BacktestEngine:
                 "ta_strength": ta_strength,
                 "fa_signal": fa_signal,
                 "fa_strength": fa_strength,
-                "signal": signal,
-                "quality": quality,
-                "risk_label": risk_label,
-                "primary_trade_signal": signal,
-                "confidence_score": confidence_score,
+                "signal": fused["signal"],
+                "quality": fused["quality"],
+                "risk_label": fused["risk_label"],
+                "confidence": fused["confidence"],
+                "confidence_bucket": fused["confidence_bucket"],
+                "primary_trade_signal": fused["signal"],
                 "reason": reason
             })
 
