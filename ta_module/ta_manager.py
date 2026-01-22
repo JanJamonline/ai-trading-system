@@ -1,18 +1,23 @@
 class TAManager:
+    """
+    Technical Analysis Manager
+    CONTRACT:
+    evaluate(index) -> (signal, strength, reason)
+    """
+
     def __init__(self, df):
         self.df = df
 
-    def evaluate(self, idx):
-        if idx <= 0 or idx >= len(self.df):
-            return "HOLD", 0, "HIGH_RISK", "NO_DATA"
+    def evaluate(self, i):
+        if i == 0:
+            return "HOLD", 0, "NO_DATA"
 
-        close = self.df.iloc[idx]["close"]
-        prev_close = self.df.iloc[idx - 1]["close"]
+        prev = self.df.iloc[i - 1]
+        curr = self.df.iloc[i]
 
-        if close > prev_close:
-            return "BUY", 70, "MEDIUM_RISK", "UP"
-
-        if close < prev_close:
-            return "SELL", 70, "MEDIUM_RISK", "DOWN"
-
-        return "HOLD", 0, "HIGH_RISK", "NO_CONFIRMATION"
+        if curr["close"] > prev["close"]:
+            return "BUY", 70, "UP"
+        elif curr["close"] < prev["close"]:
+            return "SELL", 70, "DOWN"
+        else:
+            return "HOLD", 0, "FLAT"

@@ -1,24 +1,26 @@
+import pandas as pd
+
 class SignalEvaluator:
-    def evaluate_quality(self, signal_data):
-        signal = signal_data["signal"]
-        direction = signal_data["direction"]
-        confidence = signal_data["confidence"]
-        reason = signal_data["reason"]
-        risk_label = signal_data["risk_label"]
+    def evaluate_primary_signal(self, results):
+        df = pd.DataFrame(results)
 
-        # STRONG
-        if (
-            signal in ["BUY", "SELL"]
-            and direction != "NEUTRAL"
-            and confidence >= 70
-            and reason != "NO_CONFIRMATION"
-            and risk_label != "HIGH_RISK"
-        ):
-            return "STRONG"
+        actionable = df[df["primary_trade_signal"].isin(["BUY", "SELL"])]
 
-        # MEDIUM
-        if signal in ["BUY", "SELL"] and confidence >= 50:
-            return "MEDIUM"
+        total = len(actionable)
+        wins = len(actionable[actionable["quality"] == "STRONG"])
+        losses = total - wins
 
-        # WEAK
-        return "WEAK"
+        flip_rate = (
+            (actionable["primary_trade_signal"] != actionable["signal"])
+            .mean() if total > 0 else 0
+        )
+
+        return {
+            "total": total,
+            "wins": wins,
+            "losses": losses,
+            "win_rate": wins / total if total else 0,
+            "loss_rate": losses / total if total else 0,
+            "flip_rate": flip_rate,
+            "verdict": "STABLE" if wins >= losses else "UNSTABLE"
+        }
