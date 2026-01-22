@@ -1,27 +1,27 @@
 class FusionEngine:
     """
-    Combines TA + FA signals into:
-    - fused signal
-    - confidence quality
-    - risk label
+    Combines TA and FA signals into a final actionable signal.
     """
 
-    def fuse(self, ta_signal, ta_strength, fa_signal, fa_strength):
-        # Default values
+    def fuse(self, ta_signal: str, fa_signal: str):
+        # Default
         signal = "HOLD"
         quality = "WEAK"
-        risk = "HIGH_RISK"
+        risk_label = "HIGH_RISK"
 
-        if ta_signal == fa_signal and ta_signal in ["BUY", "SELL"]:
-            signal = ta_signal
-            quality = "STRONG" if ta_strength >= 70 and fa_strength >= 70 else "MEDIUM"
-            risk = "LOW_RISK" if quality == "STRONG" else "MEDIUM_RISK"
+        if ta_signal == "BUY" and fa_signal == "BULLISH":
+            signal = "BUY"
+            quality = "STRONG"
+            risk_label = "LOW_RISK"
 
-        return signal, quality, risk
+        elif ta_signal == "SELL" and fa_signal == "BEARISH":
+            signal = "SELL"
+            quality = "STRONG"
+            risk_label = "LOW_RISK"
 
-    def final_action(self, signal, quality, risk):
-        if signal == "BUY" and quality == "STRONG" and risk == "LOW_RISK":
-            return "BUY"
-        if signal == "SELL" and quality == "STRONG" and risk == "LOW_RISK":
-            return "SELL"
-        return "WAIT"
+        elif ta_signal in ["BUY", "SELL"]:
+            signal = "HOLD"
+            quality = "WEAK"
+            risk_label = "MEDIUM_RISK"
+
+        return signal, quality, risk_label

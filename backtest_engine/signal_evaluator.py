@@ -1,13 +1,39 @@
+import pandas as pd
+
 class SignalEvaluator:
     """
-    Evaluates agreement between multiple timeframes
+    Evaluates signal quality, conflicts, and confidence score.
     """
 
-    def timeframe_agreement(self, signal_5m: str, signal_15m: str):
-        if signal_5m == signal_15m and signal_5m in ["BUY", "SELL"]:
-            return True, signal_5m
+    def calculate_confidence_score(
+        self,
+        ta_strength: int,
+        fa_strength: int,
+        ta_signal: str,
+        fa_signal: str,
+        risk_label: str
+    ) -> int:
+        """
+        Returns confidence score between 0 and 100
+        """
 
-        if signal_5m == "HOLD" or signal_15m == "HOLD":
-            return False, "HOLD"
+        # Base score
+        base = (ta_strength + fa_strength) / 2
 
-        return False, "HOLD"
+        # Agreement / conflict adjustment
+        if (
+            (ta_signal == "BUY" and fa_signal == "BULLISH")
+            or (ta_signal == "SELL" and fa_signal == "BEARISH")
+        ):
+            base += 20
+        elif ta_signal in ["BUY", "SELL"] and fa_signal != "NEUTRAL":
+            base -= 15
+
+        # Risk adjustment
+        if risk_label == "LOW_RISK":
+            base += 10
+        elif risk_label == "HIGH_RISK":
+            base -= 20
+
+        # Clamp
+        return int(max(0, min(100, base)))
