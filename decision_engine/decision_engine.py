@@ -1,9 +1,8 @@
-from signal_fusion.fusion_engine import SignalFusionEngine
-
-
 class DecisionEngine:
-    def __init__(self):
-        self.fusion = SignalFusionEngine()
+    """
+    Orchestrates higher-level trade decision logic.
+    Currently passive (read-only system).
+    """
 
-    def decide(self, ta_result, fa_result):
-        return self.fusion.fuse(ta_result, fa_result)
+    def assess(self, row):
+        return row["primary_trade_signal"]

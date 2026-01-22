@@ -1,26 +1,13 @@
-import pandas as pd
-
 class SignalEvaluator:
-    def evaluate_primary_signal(self, results):
-        df = pd.DataFrame(results)
+    """
+    Evaluates agreement between multiple timeframes
+    """
 
-        actionable = df[df["primary_trade_signal"].isin(["BUY", "SELL"])]
+    def timeframe_agreement(self, signal_5m: str, signal_15m: str):
+        if signal_5m == signal_15m and signal_5m in ["BUY", "SELL"]:
+            return True, signal_5m
 
-        total = len(actionable)
-        wins = len(actionable[actionable["quality"] == "STRONG"])
-        losses = total - wins
+        if signal_5m == "HOLD" or signal_15m == "HOLD":
+            return False, "HOLD"
 
-        flip_rate = (
-            (actionable["primary_trade_signal"] != actionable["signal"])
-            .mean() if total > 0 else 0
-        )
-
-        return {
-            "total": total,
-            "wins": wins,
-            "losses": losses,
-            "win_rate": wins / total if total else 0,
-            "loss_rate": losses / total if total else 0,
-            "flip_rate": flip_rate,
-            "verdict": "STABLE" if wins >= losses else "UNSTABLE"
-        }
+        return False, "HOLD"
