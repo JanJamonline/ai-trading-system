@@ -1,18 +1,25 @@
+from signal_fusion.fusion_engine import FusionEngine
+
 class BacktestEngine:
-    def __init__(self, ta_manager, fa_manager):
-        self.ta = ta_manager
-        self.fa = fa_manager
+    def __init__(self, ta_manager, fa_manager, fusion_engine=None):
+        self.ta_manager = ta_manager
+        self.fa_manager = fa_manager
+        self.fusion = fusion_engine or FusionEngine()
 
     def run(self, df, symbol):
         results = []
 
         for i in range(len(df)):
-            ta_signal, ta_strength, reason = self.ta.evaluate(i)
-            fa_signal, fa_strength = self.fa.evaluate(symbol)
+            ta_signal, ta_strength, reason = self.ta_manager.evaluate(i)
+            fa_signal, fa_strength = self.fa_manager.evaluate(symbol)
 
-            final_signal = ta_signal
-            quality = "WEAK"
-            risk_label = "HIGH_RISK"
+            signal, quality, risk_label = self.fusion.fuse(
+                ta_signal, ta_strength, fa_signal, fa_strength
+            )
+
+            confidence = self.fusion.compute_confidence(
+                ta_strength, fa_strength, quality, risk_label
+            )
 
             results.append({
                 "time": df.iloc[i]["time"],
@@ -22,10 +29,11 @@ class BacktestEngine:
                 "ta_strength": ta_strength,
                 "fa_signal": fa_signal,
                 "fa_strength": fa_strength,
-                "signal": final_signal,
+                "signal": signal,
                 "quality": quality,
                 "risk_label": risk_label,
-                "primary_trade_signal": final_signal,
+                "confidence_score": confidence,
+                "primary_trade_signal": signal,
                 "reason": reason
             })
 
