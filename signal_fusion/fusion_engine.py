@@ -1,16 +1,20 @@
 class FusionEngine:
-    def derive_primary_trade_signal(self, signal, quality, risk_label):
-        """
-        SINGLE FINAL TRADE DECISION
-        """
+    def fuse(self, ta_signal, ta_strength, fa_signal, fa_strength):
+        score = 0
 
-        if risk_label == "HIGH_RISK":
-            return "HOLD"
+        if ta_signal == "BUY":
+            score += ta_strength
+        elif ta_signal == "SELL":
+            score -= ta_strength
 
-        if signal == "BUY" and quality in ["STRONG", "MEDIUM"]:
-            return "BUY"
+        if fa_signal == "BULLISH":
+            score += fa_strength
+        elif fa_signal == "BEARISH":
+            score -= fa_strength
 
-        if signal == "SELL" and quality in ["STRONG", "MEDIUM"]:
-            return "SELL"
-
-        return "HOLD"
+        if score > 50:
+            return "BUY", "STRONG", "LOW_RISK"
+        elif score < -50:
+            return "SELL", "STRONG", "LOW_RISK"
+        else:
+            return "HOLD", "WEAK", "HIGH_RISK"

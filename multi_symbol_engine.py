@@ -1,27 +1,23 @@
-import pandas as pd
-
+from price_module.live_price_manager import LivePriceManager
 from ta_module.ta_manager import TAManager
 from fa_module.fa_manager import FAManager
 from backtest_engine.backtest_engine import BacktestEngine
-
 
 def generate_signals_multi(symbols):
     all_results = []
 
     for symbol in symbols:
-        df_5m = pd.read_csv(f"data/{symbol}_5m.csv")
+        price_manager = LivePriceManager(symbol)
+        df = price_manager.fetch(interval="5m")
 
-        # Initialize modules
-        ta_5m = TAManager(df_5m)
-        fa = FAManager("data/fa_data.csv")
+        ta = TAManager(df)
+        fa = FAManager()
 
-        # Engine MUST be created with dependencies
         engine = BacktestEngine(
-            ta_5m=ta_5m,
-            fa=fa
+            ta_manager=ta,
+            fa_manager=fa
         )
 
-        results = engine.run(df_5m, symbol)
-        all_results.extend(results)
+        all_results.extend(engine.run(df, symbol))
 
     return all_results
