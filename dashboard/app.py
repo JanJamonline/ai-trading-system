@@ -28,7 +28,7 @@ st.caption("Read-only decision intelligence • No auto trading")
 # =====================================================
 symbols_input = st.text_input(
     "Enter symbols (comma separated)",
-    value="TATASTEEL"
+    value="TATASTEEL,MRPL,SAIL,YESBANK,HDFCBANK"
 )
 
 generate = st.button("Generate Signals")
@@ -56,6 +56,8 @@ def color_signal(val):
         return "background-color:#ffd6d6;font-weight:bold"
     if val == "HOLD":
         return "background-color:#f0f0f0;font-weight:bold"
+    if val == "NO_DATA":
+        return "background-color:#f7f7f7;font-style:italic;color:#777"
     return ""
 
 # =====================================================
@@ -73,8 +75,8 @@ if generate:
 
     if invalid_symbols:
         st.warning(
-            f"No data available for: {', '.join(invalid_symbols)}. "
-            "These symbols were skipped."
+            f"No CSV data found for: {', '.join(invalid_symbols)}. "
+            "These symbols will be shown as NO DATA."
         )
 
     if not valid_symbols:
@@ -82,48 +84,87 @@ if generate:
         st.stop()
 
     # -------------------------
-    # ENGINE CALL (UNCHANGED)
+    # ENGINE CALL (SAFE)
     # -------------------------
-    results = generate_signals_multi(valid_symbols)
-
-    if isinstance(results, list):
-        df = pd.DataFrame(results)
-    else:
-        df = results.copy()
-
-    if df.empty:
-        st.warning("No results returned.")
+    try:
+        results = generate_signals_multi(valid_symbols)
+    except Exception as e:
+        st.error(f"Signal engine failed: {e}")
         st.stop()
 
-    if {"symbol", "time"}.issubset(df.columns):
-        df = df.sort_values(["symbol", "time"]).reset_index(drop=True)
+    # Normalize results to DataFrame
+    if results is None:
+        results_df = pd.DataFrame()
+    elif isinstance(results, list):
+        results_df = pd.DataFrame(results)
+    else:
+        results_df = results.copy()
 
     # =====================================================
-    # PER SYMBOL PRIMARY DECISION
+    # PER SYMBOL PRIMARY DECISION (OPTION B)
     # =====================================================
     st.markdown("---")
     st.subheader("🎯 PRIMARY TRADE DECISION (Per Symbol)")
 
-    for symbol in valid_symbols:
-        sym_df = df[df["symbol"] == symbol]
+    summary_rows = []
+
+    for symbol in raw_symbols:
+        sym_df = (
+            results_df[results_df["symbol"] == symbol]
+            if not results_df.empty and "symbol" in results_df.columns
+            else pd.DataFrame()
+        )
+
         if sym_df.empty:
-            continue
+            summary_rows.append({
+                "symbol": symbol,
+                "primary_trade_signal": "NO_DATA",
+                "confidence": None,
+                "confidence_bucket": "NO_DATA",
+                "risk_label": "NO_DATA",
+                "status": "NO DATA AVAILABLE"
+            })
+        else:
+            latest = sym_df.sort_values("time").iloc[-1]
+            summary_rows.append({
+                "symbol": symbol,
+                "primary_trade_signal": latest.get("primary_trade_signal", "NA"),
+                "confidence": latest.get("confidence", 0),
+                "confidence_bucket": latest.get("confidence_bucket", "NA"),
+                "risk_label": latest.get("risk_label", "NA"),
+                "status": "OK"
+            })
 
-        latest = sym_df.iloc[-1]
+    summary_df = pd.DataFrame(summary_rows)
 
-        st.markdown(f"### {symbol}")
+    for _, row in summary_df.iterrows():
+        st.markdown(f"### {row['symbol']}")
         c1, c2, c3, c4 = st.columns(4)
 
-        c1.metric("PRIMARY SIGNAL", latest.get("primary_trade_signal", "NA"))
-        c2.metric("CONFIDENCE", f"{latest.get('confidence', 0)}%")
-        c3.metric("CONFIDENCE BUCKET", latest.get("confidence_bucket", "NA"))
-        c4.metric("RISK", latest.get("risk_label", "NA"))
+        c1.metric("PRIMARY SIGNAL", row["primary_trade_signal"])
+        c2.metric(
+            "CONFIDENCE",
+            "-" if row["confidence"] is None else f"{row['confidence']}%"
+        )
+        c3.metric("CONFIDENCE BUCKET", row["confidence_bucket"])
+        c4.metric("RISK", row["risk_label"])
+
+        if row["primary_trade_signal"] == "NO_DATA":
+            st.info("No usable live or fallback data for this symbol yet.")
 
         st.markdown("---")
 
     # =====================================================
-    # TABLE
+    # TABLE (ONLY IF DATA EXISTS)
     # =====================================================
     st.subheader("Signal Breakdown (Review Only)")
-    styled_df = df.style.applymap(color_signal, subset=["primary_trade_signal"])
+
+    if results_df.empty:
+        st.warning("No signal rows generated for any symbol.")
+        st.stop()
+
+    styled_df = results_df.style.applymap(
+        color_signal,
+        subset=["primary_trade_signal"]
+    )
     st.dataframe(styled_df, use_container_width=True)

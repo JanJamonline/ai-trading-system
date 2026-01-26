@@ -1,6 +1,8 @@
 import yfinance as yf
 import pandas as pd
 from pathlib import Path
+import os
+
 
 class LivePriceManager:
     def __init__(self, symbol):
@@ -19,11 +21,11 @@ class LivePriceManager:
             if df.empty:
                 raise ValueError("Empty live data")
 
-            # Handle datetime
+            # Handle datetime index
             if isinstance(df.index, pd.DatetimeIndex):
                 df = df.reset_index()
 
-            # Flatten columns (important)
+            # Flatten column names
             df.columns = [
                 c[0].lower() if isinstance(c, tuple) else str(c).lower()
                 for c in df.columns
@@ -46,13 +48,27 @@ class LivePriceManager:
 
     def _fallback_csv(self, interval):
         csv_path = Path("data") / f"{self.symbol}_{interval}.csv"
-        if not csv_path.exists():
-            raise RuntimeError(f"No fallback CSV: {csv_path}")
 
-        df = pd.read_csv(csv_path)
+        # CSV does not exist
+        if not csv_path.exists():
+            print(f"⚠️ CSV NOT FOUND: {csv_path}")
+            return pd.DataFrame()
+
+        # CSV exists but is empty
+        if os.path.getsize(csv_path) == 0:
+            print(f"⚠️ CSV EMPTY: {csv_path}")
+            return pd.DataFrame()
+
+        try:
+            df = pd.read_csv(csv_path)
+        except Exception as e:
+            print(f"⚠️ CSV READ FAILED ({e})")
+            return pd.DataFrame()
+
         df.columns = [c.lower() for c in df.columns]
 
         if "time" not in df.columns:
-            raise RuntimeError("CSV missing time column")
+            print("⚠️ CSV missing time column")
+            return pd.DataFrame()
 
         return df
